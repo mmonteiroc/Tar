@@ -4,7 +4,7 @@ import java.io.RandomAccessFile;
 public class Tar {
     // ATRIBUTOS
     private File ruta;
-    private Headers[] headers;
+    private Header[] headers;
 
 
     // Constructor
@@ -34,10 +34,24 @@ public class Tar {
     private void extractHeaders() throws Exception {
 
         RandomAccessFile tar = new RandomAccessFile(this.ruta,"r");
+        // El tamaño de los archivos son multiplos de 512
+        // el header es 512
+
+        long inicio = 0;
+        //Header h1 = sacarInformacion(inicio,tar);
+        //inicio += 512 + h1.getTamano();
+        /*Header h2 = sacarInformacion(inicio,tar);
+        inicio+= h2.getTamano()+512;
+        Header h3 = sacarInformacion(inicio,tar);
+        inicio+=h3.getTamano()+512;
+        Header h4 = sacarInformacion(inicio,tar);*/
 
 
-        sacarInformacion(0, tar);
-        sacarInformacion(15013, tar);
+        for (int i = 0; i < 6; i++) {
+            Header h1 = sacarInformacion(inicio,tar);
+            inicio += 512 + h1.getTamano();
+        }
+
 
 
 
@@ -47,7 +61,7 @@ public class Tar {
 
 
 
-    private void sacarInformacion(long inicio, RandomAccessFile tar) throws Exception{
+    private Header sacarInformacion(long inicio, RandomAccessFile tar) throws Exception{
 
         String fileName="";
         int finish=0;
@@ -79,9 +93,21 @@ public class Tar {
         }
         long tamano = convertOctalToDecimal(numero);
 
+        while (true){
+            if (tamano%512 == 0){
+                break;
+            }else {
+                tamano++;
+            }
+        }
+
         System.out.println("Tamaño: " + tamano);
         System.out.println("Nombre: " + fileName);
+        System.out.println(fileName.length());
 
+        int checksum=0;
+        Header h = new Header(fileName,tamano,checksum,inicio+512);
+        return h;
     }
 
 
@@ -105,15 +131,15 @@ public class Tar {
 }
 
 
-class Headers{
+class Header{
     // Atributos
     private String filename;
-    private int tamano;
+    private long tamano;
     private long checksum;
-    private int inicioValor;
+    private long inicioValor;
 
     // Constructor
-    public Headers(String filename, int tamano, long checksum, int inicioValor){
+    public Header(String filename, long tamano, long checksum, long inicioValor){
         this.filename = filename;
         this.tamano = tamano;
         this.checksum = checksum;
@@ -126,13 +152,13 @@ class Headers{
     public String getFilename() {
         return this.filename;
     }
-    public int getTamano() {
+    public long getTamano() {
         return this.tamano;
     }
     public long getChecksum() {
         return this.checksum;
     }
-    public int getInicioValor(){return this.inicioValor;}
+    public long getInicioValor(){return this.inicioValor;}
 
     // Setters
     public void setTamano(int tamano) {
