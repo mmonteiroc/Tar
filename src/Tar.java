@@ -1,6 +1,16 @@
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.util.LinkedList;
+import java.util.Scanner;
+
+/**
+ * Creado por: mmonteiro
+ * miguelmonteiroclaveri@gmail.com
+ * github.com/mmonteiroc
+ * Paquete PACKAGE_NAME
+ * Proyecto Practica-Tar
+ */
+
 
 public class Tar {
     // ATRIBUTOS
@@ -32,34 +42,30 @@ public class Tar {
         RandomAccessFile tar = new RandomAccessFile(this.ruta, "r");
         int index = -1;
 
-
         for (int i = 0; i < nombres.length; i++) {
             if (nombres[i].equals(name)) {
                 index = i;
                 break;
-            } else {
-                continue;
             }
         }
 
-
-        byte[] dev;
+        byte[] devolver;
         if (index == -1) {
             return null;
         } else {
             Header h = headers.get(index);
             long tamaño = h.getTamañoOriginal();
             long inicioContenido = h.getInicioValor();
-            dev = new byte[(int) tamaño];
+            devolver = new byte[(int) tamaño];
             tar.seek(inicioContenido);
             for (int i = 0; i < tamaño; i++) {
-                dev[i] = tar.readByte();
+                devolver[i] = tar.readByte();
             }
 
         }
 
 
-        return dev;
+        return devolver;
     }
 
 
@@ -68,10 +74,9 @@ public class Tar {
 
 
 
+    /*      METODOS PORPIOS     */
 
 
-
-    // Metodos propios
     private void extractHeaders() throws Exception {
         RandomAccessFile tar = new RandomAccessFile(this.ruta,"r");
         // El tamaño de los archivos son multiplos de 512
@@ -83,19 +88,26 @@ public class Tar {
             if (head.getFilename().length() == 0) {
                 break;
             }
-            System.out.println(head.toString());
             headers.addLast(head);
             inicio += 512 + head.getTamano();
         }
     }
 
 
-
-
+    /**
+     * @param inicio Valor que nos indica donde empezar a leer
+     * @param tar    Archivo tar que tenemos que leer
+     * @return Devuelve un Header
+     * @throws Exception Puede lanzar una excepcion a la hora de leer el tar
+     *                   <p>
+     *                   Este metodo lo que hace es desglosar y leer toda la informacion que necesitamos
+     *                   de un header, una vez finalizado este metodo crea un objeto header
+     *                   (Clase que he implementado al final del codigo) y una vez creado lo retornamos.
+     */
     private Header sacarInformacion(long inicio, RandomAccessFile tar) throws Exception{
 
 
-        // Nombre
+        /* Aqui sacamos el nombre del header */
         String fileName="";
         tar.seek(inicio);
         for (int i = 0; i < 99; i++) {
@@ -106,11 +118,9 @@ public class Tar {
             }
         }
 
-        // Tamaño
-        System.out.println();
+        /* Aqui extrameos el tamaño del header*/
         tar.seek(124+inicio);
         String numero = "";
-
         for (int i = 0; i < 11; i++) {
             int ayuda = tar.readByte();
             int s=0;
@@ -121,6 +131,9 @@ public class Tar {
         }
         long tamano = convertOctalToDecimal(numero);
         long tamañoOriginal = tamano;
+
+        /*Dicho tamaño ha de ser multiplo de 512 asi que si no lo es, vamos
+        aumentandolo 1 a 1 hasta que encontremos dicho multiplo*/
         while (true){
             if (tamano%512 == 0){
                 break;
@@ -137,25 +150,100 @@ public class Tar {
     }
 
 
-
-
-
+    /**
+     * @param octal Recibimos una string del numero en octal
+     * @return el numero en decimal del octal que hemos recibido
+     *
+     * Este simple metodo transforma de octal a decimal
+     */
     private int convertOctalToDecimal(String  octal) {
         int result = 0;
         for (int j = 0, i = octal.length()-1; j < octal.length(); j++, i--) {
-            result += Character.getNumericValue(octal.charAt(i)) * (Math.pow(8,j));
+            result += Character.getNumericValue(octal.charAt(i)) * (Math.pow(8, j));
         }
         return result;
     }
 
+}
 
 
+class Main {
+    public static void main(String[] args) throws Exception {
 
+        Tar archivoTar = new Tar("archivosTar/archive2.tar");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Bienvenido!");
+        mostrarMenu();
+        while (true) {
+            String opcion = scanner.nextLine();
+            realizarFuncion(archivoTar, opcion);
+            System.out.println("Desea continuar (con) o salir (sal) ?");
+            String opcion2 = scanner.nextLine();
+            if (opcion2.equals("con")) {
+                mostrarMenu();
+                continue;
+
+            } else if (opcion2.equals("sal")) {
+                System.exit(0);
+            } else {
+                System.out.println("Porfavor introduce una opcion valida");
+            }
+        }
+
+
+    }
+
+
+    private static void mostrarMenu() {
+        System.out.println("Tienes las siguientes opciones para interactuar:");
+        System.out.println("---------------------");
+        System.out.println("1·load");
+        System.out.println("2·list");
+        System.out.println("3·extract");
+        System.out.println("4·exit");
+        System.out.println("---------------------");
+        System.out.println("Has de introducir el nombre de la opcion que deseas sin incluir el numero ni el punto");
+    }
+
+    private static void realizarFuncion(Tar tar, String funcion) {
+        String[] imprimir = null;
+        switch (funcion) {
+            case "load":
+                tar.expand();
+                break;
+            case "list":
+                imprimir = tar.list();
+                break;
+            case "extract":
+                break;
+
+
+            case "exit":
+                System.exit(0);
+                break;
+            default:
+                break;
+
+        }
+
+        if (imprimir != null) {
+            System.out.println("Estos son los archivos que contiene el tar:");
+            for (int i = 0; i < imprimir.length; i++) {
+                System.out.println(imprimir[i]);
+            }
+        }
+    }
 
 
 }
 
 
+/**
+ * Esta clase llamada Header la usamos para guardar
+ * informacion que nos interesa de cada header de nuestro archivo tar.
+ *
+ * Contiene informacion como el nombre, el tamaño, el checksum etc
+ */
 class Header{
     // Atributos
     private String filename;
@@ -169,36 +257,45 @@ class Header{
         this.filename = filename;
         this.tamano = tamano;
         this.checksum = checksum;
-        this.inicioValor=inicioValor;
+        this.inicioValor = inicioValor;
         this.tamañoOriginal = tamañoOriginal;
     }
 
-    // Getters
+    /*
+     *               Getters
+     *
+     * Estos metodos son getters que nos permiten recibir
+     * informacion de dicho header desde fuera de la clase
+     * ya que los atributos del header son privados
+     * */
     public String getFilename() {
         return this.filename;
     }
+
     public long getTamano() {
         return this.tamano;
     }
+
     public long getChecksum() {
         return this.checksum;
     }
-    public long getInicioValor(){return this.inicioValor;}
+
+    public long getInicioValor() {
+        return this.inicioValor;
+    }
 
     public long getTamañoOriginal() {
         return this.tamañoOriginal;
     }
-    // Setters
-    public void setTamano(int tamano) {
-        this.tamano = tamano;
-    }
-    public void setChecksum(long checksum) {
-        this.checksum = checksum;
-    }
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
 
+
+    /**
+     * @return Devulve un String con informacion.
+     *
+     * Este metodo es override de la clase Object,
+     * nos permite ver toda la informacion que necesitamos
+     * del objeto en un simple string
+     */
     @Override
     public String toString() {
         return "Nombre: " + this.filename + "\nTamano: " + this.tamano + "\nchecksum: " + this.checksum + "\nInicio valor del archivo: " + this.inicioValor;
