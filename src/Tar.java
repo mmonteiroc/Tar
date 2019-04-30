@@ -21,7 +21,6 @@ public class Tar {
     // Constructor
     public Tar(String filename) throws Exception{
         this.ruta = new File(filename);
-        extractHeaders();
     }
 
 
@@ -70,7 +69,9 @@ public class Tar {
 
 
     // Expandeix el fitxer TAR dins la memòria
-    public void expand() { }
+    public void expand() throws Exception {
+        extractHeaders();
+    }
 
 
 
@@ -82,7 +83,7 @@ public class Tar {
         // El tamaño de los archivos son multiplos de 512
         // el header es 512
         long inicio = 0;
-        Header head = null;
+        Header head;
         while (true) {
             head = sacarInformacion(inicio, tar);
             if (head.getFilename().length() == 0) {
@@ -99,10 +100,9 @@ public class Tar {
      * @param tar    Archivo tar que tenemos que leer
      * @return Devuelve un Header
      * @throws Exception Puede lanzar una excepcion a la hora de leer el tar
-     *                   <p>
-     *                   Este metodo lo que hace es desglosar y leer toda la informacion que necesitamos
-     *                   de un header, una vez finalizado este metodo crea un objeto header
-     *                   (Clase que he implementado al final del codigo) y una vez creado lo retornamos.
+     * Este metodo lo que hace es desglosar y leer toda la informacion que necesitamos
+     * de un header, una vez finalizado este metodo crea un objeto header
+     * (Clase que he implementado al final del codigo) y una vez creado lo retornamos.
      */
     private Header sacarInformacion(long inicio, RandomAccessFile tar) throws Exception{
 
@@ -142,11 +142,8 @@ public class Tar {
             }
         }
 
-        // Checksum
-        int checksum=0;
 
-
-        return new Header(fileName, tamano, checksum, inicio + 512, tamañoOriginal);
+        return new Header(fileName, tamano, inicio + 512, tamañoOriginal);
     }
 
 
@@ -167,76 +164,6 @@ public class Tar {
 }
 
 
-class Main {
-    public static void main(String[] args) throws Exception {
-
-        Tar archivoTar = new Tar("archivosTar/archive2.tar");
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Bienvenido!");
-        mostrarMenu();
-        while (true) {
-            String opcion = scanner.nextLine();
-            realizarFuncion(archivoTar, opcion);
-            System.out.println("Desea continuar (con) o salir (sal) ?");
-            String opcion2 = scanner.nextLine();
-            if (opcion2.equals("con")) {
-                mostrarMenu();
-                continue;
-
-            } else if (opcion2.equals("sal")) {
-                System.exit(0);
-            } else {
-                System.out.println("Porfavor introduce una opcion valida");
-            }
-        }
-
-
-    }
-
-
-    private static void mostrarMenu() {
-        System.out.println("Tienes las siguientes opciones para interactuar:");
-        System.out.println("---------------------");
-        System.out.println("1·load");
-        System.out.println("2·list");
-        System.out.println("3·extract");
-        System.out.println("4·exit");
-        System.out.println("---------------------");
-        System.out.println("Has de introducir el nombre de la opcion que deseas sin incluir el numero ni el punto");
-    }
-
-    private static void realizarFuncion(Tar tar, String funcion) {
-        String[] imprimir = null;
-        switch (funcion) {
-            case "load":
-                tar.expand();
-                break;
-            case "list":
-                imprimir = tar.list();
-                break;
-            case "extract":
-                break;
-
-
-            case "exit":
-                System.exit(0);
-                break;
-            default:
-                break;
-
-        }
-
-        if (imprimir != null) {
-            System.out.println("Estos son los archivos que contiene el tar:");
-            for (int i = 0; i < imprimir.length; i++) {
-                System.out.println(imprimir[i]);
-            }
-        }
-    }
-
-
-}
-
 
 /**
  * Esta clase llamada Header la usamos para guardar
@@ -248,15 +175,13 @@ class Header{
     // Atributos
     private String filename;
     private long tamano;
-    private long checksum;
     private long inicioValor;
     private long tamañoOriginal;
 
     // Constructor
-    Header(String filename, long tamano, long checksum, long inicioValor, long tamañoOriginal) {
+    Header(String filename, long tamano, long inicioValor, long tamañoOriginal) {
         this.filename = filename;
         this.tamano = tamano;
-        this.checksum = checksum;
         this.inicioValor = inicioValor;
         this.tamañoOriginal = tamañoOriginal;
     }
@@ -271,13 +196,8 @@ class Header{
     public String getFilename() {
         return this.filename;
     }
-
     public long getTamano() {
         return this.tamano;
-    }
-
-    public long getChecksum() {
-        return this.checksum;
     }
 
     public long getInicioValor() {
@@ -298,7 +218,7 @@ class Header{
      */
     @Override
     public String toString() {
-        return "Nombre: " + this.filename + "\nTamano: " + this.tamano + "\nchecksum: " + this.checksum + "\nInicio valor del archivo: " + this.inicioValor;
+        return "Nombre: " + this.filename + "\nTamano: " + this.tamano + "\nInicio valor del archivo: " + this.inicioValor;
     }
 
 }
