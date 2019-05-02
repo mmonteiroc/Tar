@@ -30,7 +30,6 @@ public class Tar {
         for (int i = 0; i < dev.length; i++) {
             dev[i] = headers.get(i).getFilename();
         }
-
         return dev;
     }
 
