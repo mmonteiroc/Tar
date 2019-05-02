@@ -1,6 +1,4 @@
-import javax.swing.*;
 import java.io.*;
-import java.nio.file.Path;
 import java.util.Scanner;
 
 /**
@@ -114,7 +112,7 @@ class Main {
                     ou.write(archivo.getBytes(nombre));
                     cargar("  Extraido!!", 100);
                     System.out.println("El archivo se ha extraido correctamente en la siguiente ruta: " + rute);
-
+                    exit();
 
                 } else {
                     System.out.println("Ruta introducida no valida, la ruta no existe");
@@ -161,7 +159,7 @@ class Main {
 
 
             System.out.println("Todos los archivos han sido extraidos en la siguiente ruta: " + rute);
-
+            exit();
 
         } else {
             System.out.println("Ruta introducida no valida, la ruta no existe");
