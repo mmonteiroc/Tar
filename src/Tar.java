@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.util.LinkedList;
-import java.util.Scanner;
 
 /**
  * Creado por: mmonteiro
@@ -33,13 +32,25 @@ public class Tar {
         return dev;
     }
 
-    // Torna un array de bytes amb el contingut del fitxer que té per nom
-    // igual a l'String «name» que passem per paràmetre
+
+    /**
+     * @param name Nombre del archivo
+     * @return devuelve el contenido del archivo en bytes
+     * @throws Exception Posible excepcion a la hora de cargar el archivo
+     *                   <p>
+     *                   Este metodo lo que hace es primero recibir un nombre y comprovar si dicho nombre
+     *                   existe en el archivo tar, una vez comprovado, si existe continuamos y lo que hacemos
+     *                   es ir recogiendo byte a byte la informacion de dicho archivo y añadiendola a un array
+     *                   que sera lo que nosotros retornaremos
+     */
     public byte[] getBytes(String name) throws Exception {
         String[] nombres = list();
         RandomAccessFile tar = new RandomAccessFile(this.ruta, "r");
-        int index = -1;
 
+
+        // Comprovamos si el nombre que nos
+        // pasan existe en dicho archivo tar
+        int index = -1;
         for (int i = 0; i < nombres.length; i++) {
             if (nombres[i].equals(name)) {
                 index = i;
@@ -49,20 +60,18 @@ public class Tar {
 
         byte[] devolver;
         if (index == -1) {
+            // no existe, devolvemos null
             return null;
         } else {
             Header h = headers.get(index);
-            long tamaño = h.getTamañoOriginal();
+            long tamaño = h.getTamanoOriginal();
             long inicioContenido = h.getInicioValor();
             devolver = new byte[(int) tamaño];
             tar.seek(inicioContenido);
             for (int i = 0; i < tamaño; i++) {
                 devolver[i] = tar.readByte();
             }
-
         }
-
-
         return devolver;
     }
 
@@ -76,7 +85,13 @@ public class Tar {
 
     /*      METODOS PORPIOS     */
 
-
+    /**
+     * @throws Exception Posible excepcion a la hora de acceder a ficheros
+     *
+     * Este metodo lo que va haciendo es ir llamando a la funcion sacarInformacion
+     * y pasandole el comienzo de cada header y luego va guardando header a header
+     * toda la informacion que nosotros necesitamos
+     */
     private void extractHeaders() throws Exception {
         RandomAccessFile tar = new RandomAccessFile(this.ruta,"r");
         // El tamaño de los archivos son multiplos de 512
@@ -105,7 +120,6 @@ public class Tar {
      */
     private Header sacarInformacion(long inicio, RandomAccessFile tar) throws Exception{
 
-
         /* Aqui sacamos el nombre del header */
         String fileName="";
         tar.seek(inicio);
@@ -129,20 +143,20 @@ public class Tar {
             numero += s;
         }
         long tamano = convertOctalToDecimal(numero);
-        long tamañoOriginal = tamano;
+        long tamanoOriginal = tamano;
 
         /*Dicho tamaño ha de ser multiplo de 512 asi que si no lo es, vamos
         aumentandolo 1 a 1 hasta que encontremos dicho multiplo*/
         while (true){
             if (tamano%512 == 0){
                 break;
-            }else {
+            } else {
                 tamano++;
             }
         }
 
 
-        return new Header(fileName, tamano, inicio + 512, tamañoOriginal);
+        return new Header(fileName, tamano, inicio + 512, tamanoOriginal);
     }
 
 
@@ -175,14 +189,14 @@ class Header{
     private String filename;
     private long tamano;
     private long inicioValor;
-    private long tamañoOriginal;
+    private long tamanoOriginal;
 
     // Constructor
-    Header(String filename, long tamano, long inicioValor, long tamañoOriginal) {
+    Header(String filename, long tamano, long inicioValor, long tamanoOriginal) {
         this.filename = filename;
         this.tamano = tamano;
         this.inicioValor = inicioValor;
-        this.tamañoOriginal = tamañoOriginal;
+        this.tamanoOriginal = tamanoOriginal;
     }
 
     /*
@@ -202,9 +216,8 @@ class Header{
     public long getInicioValor() {
         return this.inicioValor;
     }
-
-    public long getTamañoOriginal() {
-        return this.tamañoOriginal;
+    public long getTamanoOriginal() {
+        return this.tamanoOriginal;
     }
 
 
