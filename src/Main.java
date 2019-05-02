@@ -52,7 +52,9 @@ class Main {
             case "extract":
                 extract();
                 break;
-
+            case "extractAll":
+                extractAll();
+                break;
             case "exit":
                 exit();
 
@@ -68,7 +70,7 @@ class Main {
         archivo.expand();
         nombres = archivo.list();
         loaded = true;
-        cargar("  Loaded !!");
+        cargar("  Loaded !!", 100);
     }
 
 
@@ -91,7 +93,7 @@ class Main {
 
             if (result) {
                 // Nombre encontrado
-                System.out.println("Introduce una ruta (absoluta) donde quieres extraer (sin el nombre del archivo) \nque acabe con / donde quieras que se extraiga el archivo");
+                System.out.println("Introduce una ruta (absoluta) donde quieres extraer (sin el nombre del archivo) \ndonde quieras que se extraiga el archivo");
                 String rute = scan.nextLine();
                 File ruta = new File(rute);
                 if (ruta.exists()) {
@@ -108,10 +110,9 @@ class Main {
                         exit();
                     }
 
-
                     FileOutputStream ou = new FileOutputStream(archivoExtraer.getAbsolutePath());
                     ou.write(archivo.getBytes(nombre));
-                    cargar("  Extraido!!");
+                    cargar("  Extraido!!", 100);
                     System.out.println("El archivo se ha extraido correctamente en la siguiente ruta: " + rute);
 
 
@@ -134,7 +135,44 @@ class Main {
     }
 
 
-    public static boolean comprovarNombre(String name) {
+    private static void extractAll() throws Exception {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Introduce una ruta (absoluta) donde quieres extraer todo el tar");
+        String rute = scan.nextLine();
+        if (rute.charAt(rute.length() - 1) != '/') {
+            rute += "/";
+        }
+
+
+        File ruta = new File(rute);
+        if (ruta.exists()) {
+
+            for (String nombre : nombres) {
+                File archivoExtraer = new File(rute + nombre);
+                if (!archivoExtraer.createNewFile()) {
+                    System.out.println("Ha habido un error al crear el archivo");
+                    exit();
+                }
+
+                FileOutputStream output = new FileOutputStream(archivoExtraer.getAbsolutePath());
+                output.write(archivo.getBytes(nombre));
+                cargar("    archivo " + nombre + " extraido", 25);
+            }
+
+
+            System.out.println("Todos los archivos han sido extraidos en la siguiente ruta: " + rute);
+
+
+        } else {
+            System.out.println("Ruta introducida no valida, la ruta no existe");
+            exit();
+        }
+
+
+    }
+
+
+    private static boolean comprovarNombre(String name) {
         boolean find = false;
         for (String nom : nombres) {
             if (name.equals(nom)) {
@@ -146,18 +184,18 @@ class Main {
 
     }
 
-    public static void exit() {
+    private static void exit() {
         System.exit(0);
     }
 
 
-    public static void cargar(String string) throws Exception {
+    private static void cargar(String string, int time) throws Exception {
         for (int i = 0; i < 15; i++) {
-            Thread.sleep(100);
+            Thread.sleep(time);
             System.out.print("-");
         }
         System.out.println(string);
-        Thread.sleep(100);
+        Thread.sleep(time);
     }
 
 }
