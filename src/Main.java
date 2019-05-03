@@ -82,6 +82,17 @@ class Main {
         }
     }
 
+
+    /**
+     * @throws Exception Posible excepcion a la hora de crear el archivo
+     *                   <p>
+     *                   Este metodo lo que hace es primero de todo comprovar si tenemos
+     *                   algun archivo tar loaded, si es asi, nos deja continuar
+     *                   Despues nos pide un nombre que tiene que ser un archivo que este
+     *                   dentro del tar y despues, nos pedira una ruta absoluta donde
+     *                   queremos extraer dicho tar. Dicho metodo extraera el tar con el
+     *                   nombre original en path que le hayamos pasado
+     */
     private static void extract() throws Exception {
         if (loaded) {
             Scanner scan = new Scanner(System.in);
@@ -91,17 +102,16 @@ class Main {
 
             if (result) {
                 // Nombre encontrado
-                System.out.println("Introduce una ruta (absoluta) donde quieres extraer (sin el nombre del archivo) \ndonde quieras que se extraiga el archivo");
+                System.out.println("Introduce una ruta (absoluta) donde quieres extraer el archivo (sin el nombre del archivo)");
                 String rute = scan.nextLine();
+                if (rute.charAt(rute.length() - 1) != '/') {
+                    rute += "/";
+                }
                 File ruta = new File(rute);
                 if (ruta.exists()) {
 
-                    if (rute.charAt(rute.length() - 1) != '/') {
-                        rute += "/";
-                    }
                     rute += nombre;
                     File archivoExtraer = new File(rute);
-
 
                     if (!archivoExtraer.createNewFile()) {
                         System.out.println("Ha habido un error al crear el archivo");
@@ -113,19 +123,62 @@ class Main {
                     cargar("  Extraido!!", 100);
                     System.out.println("El archivo se ha extraido correctamente en la siguiente ruta: " + rute);
                     exit();
-
                 } else {
                     System.out.println("Ruta introducida no valida, la ruta no existe");
                     exit();
                 }
-
-
             } else {
                 // Nombre no encontrado
                 System.out.println("Ese nombre que has introducido no existe!!!");
                 exit();
             }
+        } else {
+            System.out.println("No has hecho un load antes de extraer dicho tar");
+        }
+    }
 
+
+    /**
+     * @throws Exception Posible excepcion a la hora de crear un archivo
+     *
+     * Este metodo lo que hace es extraer todos los archivos que tenemos
+     * dentro el tar en una ruta que nosotros le pasemos
+     */
+    private static void extractAll() throws Exception {
+        if (loaded) {
+
+            // Pedimos la ruta donde extraerlo
+            Scanner scan = new Scanner(System.in);
+            System.out.println("Introduce una ruta (absoluta) donde quieres extraer todo el tar");
+            String rute = scan.nextLine();
+            if (rute.charAt(rute.length() - 1) != '/') {
+                rute += "/";
+            }
+
+            File ruta = new File(rute);
+            if (ruta.exists()) {
+                // si la ruta existe
+                for (String nombre : nombres) {
+                    File archivoExtraer = new File(rute + nombre);
+                    if (!archivoExtraer.createNewFile()) {
+                        // en el caso de que haya habido un error a la
+                        // hora de crear uno de los archivos (se parara el programa)
+                        System.out.println("Ha habido un error al crear el archivo");
+                        exit();
+                    }
+
+                    FileOutputStream output = new FileOutputStream(archivoExtraer.getAbsolutePath());
+                    output.write(archivo.getBytes(nombre));
+                    cargar("    archivo " + nombre + " extraido", 30);
+                }
+
+                System.out.println("Todos los archivos han sido extraidos en la siguiente ruta: " + rute);
+                exit();
+            } else {
+                // si la ruta no existe
+                System.out.println("Ruta introducida no valida, la ruta no existe");
+                exit();
+            }
 
         } else {
             System.out.println("No has hecho un load antes de extraer dicho tar");
@@ -133,43 +186,13 @@ class Main {
     }
 
 
-    private static void extractAll() throws Exception {
-        Scanner scan = new Scanner(System.in);
-        System.out.println("Introduce una ruta (absoluta) donde quieres extraer todo el tar");
-        String rute = scan.nextLine();
-        if (rute.charAt(rute.length() - 1) != '/') {
-            rute += "/";
-        }
-
-
-        File ruta = new File(rute);
-        if (ruta.exists()) {
-
-            for (String nombre : nombres) {
-                File archivoExtraer = new File(rute + nombre);
-                if (!archivoExtraer.createNewFile()) {
-                    System.out.println("Ha habido un error al crear el archivo");
-                    exit();
-                }
-
-                FileOutputStream output = new FileOutputStream(archivoExtraer.getAbsolutePath());
-                output.write(archivo.getBytes(nombre));
-                cargar("    archivo " + nombre + " extraido", 25);
-            }
-
-
-            System.out.println("Todos los archivos han sido extraidos en la siguiente ruta: " + rute);
-            exit();
-
-        } else {
-            System.out.println("Ruta introducida no valida, la ruta no existe");
-            exit();
-        }
-
-
-    }
-
-
+    /**
+     * @param name nombre del archivo a buscar
+     * @return true/false
+     *
+     * Este metodo recibe un nombre de un archivo y su cometido
+     * es buscar si ese nombre existe dentro del archivo tar
+     */
     private static boolean comprovarNombre(String name) {
         boolean find = false;
         for (String nom : nombres) {
@@ -179,14 +202,21 @@ class Main {
             }
         }
         return find;
-
     }
 
+
+    /**
+     * Este metodo simplemente hace un exit del programa
+     */
     private static void exit() {
         System.exit(0);
     }
 
 
+    /**
+     * Este simple metodo lo uso para que visualmente en
+     * el terminal parezca que esta cargando una barra
+     */
     private static void cargar(String string, int time) throws Exception {
         for (int i = 0; i < 15; i++) {
             Thread.sleep(time);
