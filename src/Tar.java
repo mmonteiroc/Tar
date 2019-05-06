@@ -131,6 +131,7 @@ public class Tar {
             }
         }
 
+
         /* Aqui extrameos el tamaño del header*/
         tar.seek(124+inicio);
         String numero = "";

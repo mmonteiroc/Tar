@@ -26,6 +26,10 @@ class Main {
     }
 
 
+    /**
+     * Simple funcion que nos permite
+     * mostrar el menu siempre que queramos
+     */
     private static void mostrarMenu() {
         System.out.println("Tienes las siguientes opciones para interactuar:");
         System.out.println("---------------------");
@@ -39,6 +43,12 @@ class Main {
     }
 
 
+    /**
+     * @param orden Orden que el usuario nos pasa
+     * @throws Exception Posible excepcion que recibimos al ejecutar algunas ordenes
+     *                   <p>
+     *                   Recibimos una orden y dependiendo de la orden que recibamos hacemos una o otra cosa
+     */
     private static void execute(String orden) throws Exception {
         switch (orden) {
             case "load":
@@ -55,11 +65,20 @@ class Main {
                 break;
             case "exit":
                 exit();
-
+            default:
+                System.out.println("Orden no reconocida...");
+                System.out.println("Saliendo del sistema...");
+                exit();
         }
     }
 
 
+    /**
+     * @throws Exception posible excepcion al cargar un archivo que no exista
+     *
+     * Este archivo nos nos carga un tar que
+     * nosotros le pasemos como una ruta
+     */
     private static void load() throws Exception {
         Scanner scan = new Scanner(System.in);
         System.out.println("Por favor introduce una ruta para el archivo tar que quieres cargar (ruta absoluta)");
@@ -72,6 +91,11 @@ class Main {
     }
 
 
+    /**
+     * @throws Exception Posible excepcion que se lanzaria si diese error al cargar el archivo
+     *
+     * Este metodo lo que hace es simplemente
+     */
     private static void list() throws Exception {
         if (loaded) {
             for (String nombre : nombres) {
@@ -122,6 +146,7 @@ class Main {
                     ou.write(archivo.getBytes(nombre));
                     cargar("  Extraido!!", 100);
                     System.out.println("El archivo se ha extraido correctamente en la siguiente ruta: " + rute);
+                    ou.close();
                     exit();
                 } else {
                     System.out.println("Ruta introducida no valida, la ruta no existe");
@@ -170,6 +195,7 @@ class Main {
                     FileOutputStream output = new FileOutputStream(archivoExtraer.getAbsolutePath());
                     output.write(archivo.getBytes(nombre));
                     cargar("    archivo " + nombre + " extraido", 30);
+                    output.close();
                 }
 
                 System.out.println("Todos los archivos han sido extraidos en la siguiente ruta: " + rute);
