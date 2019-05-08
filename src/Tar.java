@@ -18,7 +18,7 @@ public class Tar {
 
 
     // Constructor
-    public Tar(String filename) throws Exception{
+    public Tar(String filename) {
         this.ruta = new File(filename);
     }
 
@@ -153,6 +153,7 @@ public class Tar {
                 break;
             } else {
                 tamano++;
+
             }
         }
 
